@@ -8,7 +8,7 @@ void logicmodule::dump(std::ostream &out) const {
 }
 
 void logicmodule::writeCNF(std::ostream &out) const {
-  uint64_t n_var = gates.size(), n_clauses = 0;
+  uint64_t n_var = gates.size()-1, n_clauses = 0;
   for(gate *g : gates) {
     n_clauses += g->nClauses();
   }
@@ -30,7 +30,7 @@ void po::writeCNF(std::ostream &out) const {
   if(val == false) {
     out << "-";
   }
-  out << getId() << " 0\n";
+  out << srcs[0]->getId() << " 0\n";
 }
   
 
