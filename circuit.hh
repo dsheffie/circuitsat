@@ -8,7 +8,7 @@
 
 class gate;
 
-enum class gateType {bogus, not1, constant, and2, or2, nor2, xor2, in, out};
+enum class gateType {bogus, not1, constantone, constantzero, and2, or2, nor2, xor2, in, out};
 
 class logicmodule {
 protected:
@@ -111,6 +111,35 @@ public:
     out << getId() << " = xor2(" << srcs[0]->getId() << "," << srcs[1]->getId() << ")\n";
   }
 };
+
+class constantone : public gate {
+protected:
+  friend class logicmodule;
+  constantone(uint64_t id, logicmodule *p) : gate(id, p) {
+    gt = gateType::constantone;
+  }
+public:
+  int nClauses() const override {return 1;}
+  void dump(std::ostream &out) const override {
+    out << getId() << " = " << srcs[0]->getId() << "\n";
+  }
+  void writeCNF(std::ostream &out) const override;  
+};
+
+class constantzero : public gate {
+protected:
+  friend class logicmodule;
+  constantzero(uint64_t id, logicmodule *p) : gate(id, p) {
+    gt = gateType::constantzero;
+  }
+public:
+  int nClauses() const override {return 1;}
+  void dump(std::ostream &out) const override {
+    out << getId() << " = " << srcs[0]->getId() << "\n";
+  }
+  void writeCNF(std::ostream &out) const override;  
+};
+
 
 class po : public gate {
 protected:

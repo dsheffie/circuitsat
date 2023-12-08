@@ -18,6 +18,14 @@ void logicmodule::writeCNF(std::ostream &out) const {
   }
 }
 
+void constantone::writeCNF(std::ostream &out) const {
+  out << getId() << " 0\n";
+}
+
+void constantzero::writeCNF(std::ostream &out) const {
+  out << "-" << getId() << " 0\n";
+}
+
 void and2::writeCNF(std::ostream &out) const {
   //(\overline {A}\vee \overline {B}\vee C)\wedge (A\vee \overline {C})\wedge (B\vee \overline {C})
   uint64_t A = srcs[0]->getId(), B = srcs[1]->getId(), C = getId();
@@ -38,7 +46,7 @@ int main() {
   logicmodule *lm = new logicmodule();
 
   auto i0 = lm->make<pi>();
-  auto i1 = lm->make<pi>();
+  auto i1 = lm->make<constantzero>();
   auto a = lm->make<and2>(i0, i1);
   auto o = lm->make<po>(a);
 
