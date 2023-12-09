@@ -32,12 +32,13 @@ class gate {
 protected:
   friend class logicmodule;
   uint64_t id;
+  int n_srcs;  
   gateType gt;
-  int n_srcs;
+  bool val;  
   gate* srcs[2] = {nullptr};
   std::set<gate*> users;
   gate(uint64_t id, logicmodule *p, int n_srcs = 0) :
-    id(id), n_srcs(n_srcs), gt(gateType::bogus) {
+    id(id), n_srcs(n_srcs), gt(gateType::bogus), val(false) {
     p->gates.push_back(this);
   }
   gate(uint64_t id, logicmodule *p, gate *a) :
@@ -52,12 +53,18 @@ protected:
     a->users.insert(this);
     b->users.insert(this);
   }
+  void setValue(bool val) {
+    this->val = val;
+  }
+  bool getValue() const {
+    return val;
+  }
   virtual ~gate() {}
 public:
   uint64_t getId() const { return id; }
   virtual int nClauses() const = 0;
   virtual void dump(std::ostream &out) const = 0;
-  virtual void writeCNF(std::ostream &out) const {};  
+  virtual void writeCNF(std::ostream &out) const {};
 };
 
 class not1 : public gate {
@@ -140,9 +147,9 @@ public:
 class po : public gate {
 protected:
   friend class logicmodule;
-  bool val = true;
-  po(uint64_t id, logicmodule *p, gate *a, bool val) : gate(id, p, a), val(val) {
+  po(uint64_t id, logicmodule *p, gate *a, bool val) : gate(id, p, a){
     gt = gateType::in;
+    this->val = val;
   }
 public:
   int nClauses() const override {return 1;}
