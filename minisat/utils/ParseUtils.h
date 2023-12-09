@@ -43,10 +43,12 @@ class StreamBuffer {
     void assureLookahead() {
         if (pos >= size) {
             pos  = 0;
-            size = gzread(in, buf, sizeof(buf)); } }
+            size = gzread(in, buf, sizeof(buf));
+	}
+    }
 
 public:
-    explicit StreamBuffer(gzFile i) : in(i), pos(0), size(0) { assureLookahead(); }
+  explicit StreamBuffer(gzFile i) : in(i), pos(0), size(0) { assureLookahead(); }
 
     int  operator *  () const { return (pos >= size) ? EOF : buf[pos]; }
     void operator ++ ()       { pos++; assureLookahead(); }
@@ -54,11 +56,34 @@ public:
 };
 
 
+class StringStreamBuffer {
+  std::vector<char> buf;
+  int           pos;
+  int           size;
+  
+
+public:
+  explicit StringStreamBuffer(std::stringstream &ss) : pos(0), size(0) {
+    const std::string& s = ss.str();
+    const char *c_str = s.c_str();
+    size = strlen(c_str);
+    for(int i = 0; i < size; i++) {
+      buf.push_back(c_str[i]);
+    }
+  }
+
+  int  operator *  () const { return (pos >= size) ? EOF : buf[pos]; }
+  void operator ++ ()       { pos++; }
+  int  position    () const { return pos; }
+};
+  
+
 //-------------------------------------------------------------------------------------------------
 // End-of-file detection functions for StreamBuffer and char*:
 
 
 static inline bool isEof(StreamBuffer& in) { return *in == EOF;  }
+static inline bool isEof(StringStreamBuffer& in) { return *in == EOF;  }
 static inline bool isEof(const char*   in) { return *in == '\0'; }
 
 //-------------------------------------------------------------------------------------------------

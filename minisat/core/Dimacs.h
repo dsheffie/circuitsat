@@ -21,7 +21,8 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #ifndef Minisat_Dimacs_h
 #define Minisat_Dimacs_h
 
-#include <stdio.h>
+#include <cstdio>
+#include <sstream>
 
 #include "utils/ParseUtils.h"
 #include "core/SolverTypes.h"
@@ -81,8 +82,16 @@ static void parse_DIMACS_main(B& in, Solver& S) {
 template<class Solver>
 static void parse_DIMACS(gzFile input_stream, Solver& S) {
     StreamBuffer in(input_stream);
-    parse_DIMACS_main(in, S); }
+    parse_DIMACS_main(in, S);
+}
 
+template<class Solver>
+static void parse_DIMACS(std::stringstream &ss, Solver& S) {
+  StringStreamBuffer in(ss);
+  parse_DIMACS_main(in, S);
+}
+
+  
 //=================================================================================================
 }
 
