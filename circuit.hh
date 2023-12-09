@@ -15,6 +15,7 @@ protected:
   friend class gate;
   uint64_t cnt;
   std::list<gate*> gates;
+  void writeCNF(std::ostream &out) const;  
 public:
   logicmodule() : cnt(1) { }
   virtual ~logicmodule() {}
@@ -23,7 +24,7 @@ public:
   template <typename T> T* make(gate *a); 
   template <typename T> T* make(gate *a, gate*b);
   void dump(std::ostream &out) const;
-  void writeCNF(std::ostream &out) const;
+  bool runMiniSAT();
 
 };
 

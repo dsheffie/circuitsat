@@ -84,7 +84,7 @@ int main() {
   auto a = lm->make<and2>(i0, i1);
   auto o = lm->make_po(a, false);
 
-  lm->writeCNF(std::cout);
+  lm->runMiniSAT();
 
   
   delete lm;
