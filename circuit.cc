@@ -1,10 +1,30 @@
 #include "circuit.hh"
 #include <iostream>
 
+gate *logicmodule::make_po(gate *in, bool val) {
+  return new po(cnt++, this, in, val);
+}
+
 void logicmodule::dump(std::ostream &out) const {
   for(gate *g : gates) {
     g->dump(out);
   }
+}
+
+void not1::dump(std::ostream &out) const {
+  out << getId() << " = not1(" << srcs[0]->getId() << ")\n";
+}
+
+void and2::dump(std::ostream &out) const {
+  out << getId() << " = and2(" << srcs[0]->getId() << "," << srcs[1]->getId() << ")\n";
+}
+
+void or2::dump(std::ostream &out) const {
+  out << getId() << " = or2(" << srcs[0]->getId() << "," << srcs[1]->getId() << ")\n";
+}
+
+void xor2::dump(std::ostream &out) const {
+  out << getId() << " = xor2(" << srcs[0]->getId() << "," << srcs[1]->getId() << ")\n";
 }
 
 void logicmodule::writeCNF(std::ostream &out) const {
@@ -27,11 +47,25 @@ void constantzero::writeCNF(std::ostream &out) const {
 }
 
 void and2::writeCNF(std::ostream &out) const {
-  //(\overline {A}\vee \overline {B}\vee C)\wedge (A\vee \overline {C})\wedge (B\vee \overline {C})
   uint64_t A = srcs[0]->getId(), B = srcs[1]->getId(), C = getId();
   out << "-" << A << " -" << B << " " << C << " 0\n";
   out << A << " -" << C << " 0\n";
   out << B << " -" << C << " 0\n";    
+}
+
+void or2::writeCNF(std::ostream &out) const {
+  uint64_t A = srcs[0]->getId(), B = srcs[1]->getId(), C = getId();
+  out << A << " " << B << " -" << C << " 0\n";
+  out << C << " -" << A << " 0\n";
+  out << C << " -" << B << " 0\n";    
+}
+
+void xor2::writeCNF(std::ostream &out) const {
+  uint64_t A = srcs[0]->getId(), B = srcs[1]->getId(), C = getId();
+  out << "-" << A << " -" << B << " -" << C << " 0\n";
+  out << "-" << A << " " << B << " " << C << " 0\n";
+  out << A << " -" << B << " " << C << " 0\n";
+  out << A << " " << B << " -" << C << " 0\n";
 }
 
 void po::writeCNF(std::ostream &out) const {
@@ -48,7 +82,7 @@ int main() {
   auto i0 = lm->make<pi>();
   auto i1 = lm->make<constantzero>();
   auto a = lm->make<and2>(i0, i1);
-  auto o = lm->make<po>(a);
+  auto o = lm->make_po(a, false);
 
   lm->writeCNF(std::cout);
 

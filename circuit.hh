@@ -18,6 +18,7 @@ protected:
 public:
   logicmodule() : cnt(1) { }
   virtual ~logicmodule() {}
+  gate *make_po(gate *a, bool val);
   template <typename T> T* make();
   template <typename T> T* make(gate *a); 
   template <typename T> T* make(gate *a, gate*b);
@@ -66,9 +67,7 @@ protected:
   }
 public:
   int nClauses() const override {return 2;}  
-  void dump(std::ostream &out) const override {
-    out << getId() << " = not1(" << srcs[0]->getId() << ")\n";
-  }
+  void dump(std::ostream &out) const override;
 };
 
 class and2 : public gate {
@@ -79,9 +78,7 @@ protected:
   }
 public:
   int nClauses() const override {return 3;};    
-  void dump(std::ostream &out) const override {
-    out << getId() << " = and2(" << srcs[0]->getId() << "," << srcs[1]->getId() << ")\n";
-  }
+  void dump(std::ostream &out) const override;
   void writeCNF(std::ostream &out) const override;  
 };
 
@@ -93,9 +90,8 @@ protected:
   }
 public:
   int nClauses() const override {return 3;}      
-  void dump(std::ostream &out) const override {
-    out << getId() << " = or2(" << srcs[0]->getId() << "," << srcs[1]->getId() << ")\n";
-  }
+  void dump(std::ostream &out) const override;
+  void writeCNF(std::ostream &out) const override;  
 };
 
 
@@ -107,9 +103,8 @@ protected:
   }
 public:
   int nClauses() const override {return 4;}      
-  void dump(std::ostream &out) const override {
-    out << getId() << " = xor2(" << srcs[0]->getId() << "," << srcs[1]->getId() << ")\n";
-  }
+  void dump(std::ostream &out) const override;
+  void writeCNF(std::ostream &out) const override;    
 };
 
 class constantone : public gate {
@@ -121,7 +116,7 @@ protected:
 public:
   int nClauses() const override {return 1;}
   void dump(std::ostream &out) const override {
-    out << getId() << " = " << srcs[0]->getId() << "\n";
+    out << getId() << " = 1\n";
   }
   void writeCNF(std::ostream &out) const override;  
 };
@@ -135,7 +130,7 @@ protected:
 public:
   int nClauses() const override {return 1;}
   void dump(std::ostream &out) const override {
-    out << getId() << " = " << srcs[0]->getId() << "\n";
+    out << getId() << " = 0\n";
   }
   void writeCNF(std::ostream &out) const override;  
 };
@@ -145,7 +140,7 @@ class po : public gate {
 protected:
   friend class logicmodule;
   bool val = true;
-  po(uint64_t id, logicmodule *p, gate *a) : gate(id, p, a) {
+  po(uint64_t id, logicmodule *p, gate *a, bool val) : gate(id, p, a), val(val) {
     gt = gateType::in;
   }
 public:
