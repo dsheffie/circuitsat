@@ -76,6 +76,7 @@ protected:
 public:
   int nClauses() const override {return 2;}  
   void dump(std::ostream &out) const override;
+  void writeCNF(std::ostream &out) const override;  
 };
 
 class and2 : public gate {
