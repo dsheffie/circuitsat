@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <cassert>
+#include <vector>
 
 gate *logicmodule::make_po(gate *in, bool val) {
   return new po(cnt++, this, in, val);
