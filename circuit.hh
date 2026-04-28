@@ -15,9 +15,9 @@ protected:
   friend class gate;
   uint64_t cnt;
   std::list<gate*> gates;
-  void writeCNF(std::ostream &out) const;  
 public:
   logicmodule() : cnt(1) { }
+  void writeCNF(std::ostream &out) const;    
   virtual ~logicmodule() {}
   gate *make_po(gate *a, bool val);
   template <typename T> T* make();

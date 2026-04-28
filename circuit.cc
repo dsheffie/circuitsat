@@ -1,5 +1,7 @@
 #include "circuit.hh"
 #include <iostream>
+#include <fstream>
+#include <cassert>
 
 gate *logicmodule::make_po(gate *in, bool val) {
   return new po(cnt++, this, in, val);
@@ -74,18 +76,63 @@ void po::writeCNF(std::ostream &out) const {
   }
   out << srcs[0]->getId() << " 0\n";
 }
-  
+
+
+std::vector<gate*> make_ripple_carry_adder(logicmodule *lm, const std::vector<gate*> & a, const std::vector<gate*> & b) {
+  std::vector<gate*> y;
+  assert(a.size() == b.size());
+  gate *cin = lm->make<constantzero>();
+  for(size_t i = 0; i < a.size(); i++) {
+    gate *a_x_b = lm->make<xor2>(a.at(i), b.at(i));
+    gate *s = lm->make<xor2>(a_x_b, cin);
+    y.push_back(s);
+    gate *cout = lm->make<and2>(a.at(i), b.at(i));
+    a_x_b = lm->make<and2>(a_x_b, cin);
+    cout = lm->make<or2>(a_x_b, cout);
+    cin = cout;
+  }
+  return y;
+}
+
+gate* make_equal(logicmodule *lm, const std::vector<gate*> & a, const std::vector<gate*> & b) {
+  std::vector<gate*> t;
+  gate *y = lm->make<constantone>();
+  assert(a.size() == b.size());
+  for(size_t i = 0; i < a.size(); i++) {
+    gate *a_x_b = lm->make<not1>(lm->make<xor2>(a.at(i), b.at(i)));
+    t.push_back(a_x_b);
+  }
+  for(size_t i = 0; i < t.size(); i++) {
+    y = lm->make<and2>(y, t.at(i));
+  }
+  return y;
+}
+
+gate* make_not_equal(logicmodule *lm, const std::vector<gate*> & a, const std::vector<gate*> & b) {
+  return lm->make<not1>(make_equal(lm, a, b));
+}
 
 int main() {
   logicmodule *lm = new logicmodule();
+  std::vector<gate*> a, b;
+  for(int i = 0; i < 4; i++) {
+    a.push_back(lm->make<pi>());
+    b.push_back(lm->make<pi>());
+  }
+  auto y = make_ripple_carry_adder(lm,a,b);
 
-  auto i0 = lm->make<pi>();
-  auto i1 = lm->make<constantzero>();
-  auto a = lm->make<and2>(i0, i1);
-  auto o = lm->make_po(a, false);
+  std::vector<gate*> c;
+  c.push_back(lm->make<constantone>());
+  c.push_back(lm->make<constantone>());
+  c.push_back(lm->make<constantone>());
+  c.push_back(lm->make<constantone>());  
+  
+  auto t = make_equal(lm, y, c);
+  auto o = lm->make_po(t, true);
 
-  lm->runMiniSAT();
-
+  //lm->runMiniSAT();
+  std::ofstream out("foo.cnf");
+  lm->writeCNF(out);
   
   delete lm;
   return 0;
