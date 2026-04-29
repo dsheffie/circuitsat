@@ -2,7 +2,9 @@
 #include <iostream>
 #include <fstream>
 #include <cassert>
+#include <cstring>
 #include <vector>
+#include <unistd.h>
 
 gate *logicmodule::make_po(gate *in, bool val) {
   return new po(cnt++, this, in, val);
@@ -11,6 +13,12 @@ gate *logicmodule::make_po(gate *in, bool val) {
 void logicmodule::dump(std::ostream &out) const {
   for(gate *g : gates) {
     g->dump(out);
+  }
+}
+
+logicmodule::~logicmodule() {
+  for(gate *g : gates) {
+    delete g;
   }
 }
 
@@ -173,10 +181,23 @@ gate* make_not_equal(logicmodule *lm, const std::vector<gate*> & a, const std::v
   return lm->make<not1>(make_equal(lm, a, b));
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+  int c;  
   logicmodule *lm = new logicmodule();
   std::vector<gate*> a, b;
   size_t n_bits = 32;
+  
+  while ((c = getopt(argc, argv, "n:")) != -1) {
+    switch(c)
+      {
+      case 'n':
+	n_bits = static_cast<size_t>(atoi(optarg));
+	break;
+      default:
+	break;
+      }
+  }
+
   for(int i = 0; i < n_bits; i++) {
     a.push_back(lm->make<pi>());
   }
@@ -186,19 +207,6 @@ int main() {
 
   auto y = make_ripple_carry_adder(lm,a,b);
   auto x = make_parallel_prefix_adder(lm,a,b);
-  //  std::vector<gate*> c;
-  //c.push_back(lm->make<constantone>());
-  //c.push_back(lm->make<constantone>());
-  //c.push_back(lm->make<constantone>());
-  //c.push_back(lm->make<constantone>());  
-
-  //for(int i = 0; i < 4; i++) {
-  //printf("rca output bit %lu\n", y.at(i)->getId());
-  //}
-  //for(int i = 0; i < 4; i++) {
-  //printf("ppa output bit %lu\n", x.at(i)->getId());
-  //}  
-  
   auto t = make_not_equal(lm, y, x);
   auto o = lm->make_po(t, true);
 

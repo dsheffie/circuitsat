@@ -18,7 +18,7 @@ protected:
 public:
   logicmodule() : cnt(1) { }
   void writeCNF(std::ostream &out) const;    
-  virtual ~logicmodule() {}
+  virtual ~logicmodule();
   gate *make_po(gate *a, bool val);
   template <typename T> T* make();
   template <typename T> T* make(gate *a); 
