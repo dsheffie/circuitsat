@@ -24,8 +24,6 @@ public:
   template <typename T> T* make(gate *a); 
   template <typename T> T* make(gate *a, gate*b);
   void dump(std::ostream &out) const;
-  bool runMiniSAT();
-
 };
 
 class gate {
@@ -34,11 +32,13 @@ protected:
   uint64_t id;
   int n_srcs;  
   gateType gt;
-  bool val;  
+  bool val;
+  uint64_t lp;
+  bool lpval;
   gate* srcs[2] = {nullptr};
   std::set<gate*> users;
   gate(uint64_t id, logicmodule *p, int n_srcs = 0) :
-    id(id), n_srcs(n_srcs), gt(gateType::bogus), val(false) {
+    id(id), n_srcs(n_srcs), gt(gateType::bogus), val(false), lp(0), lpval(false) {
     p->gates.push_back(this);
   }
   gate(uint64_t id, logicmodule *p, gate *a) :
@@ -62,6 +62,7 @@ protected:
   virtual ~gate() {}
 public:
   uint64_t getId() const { return id; }
+  virtual uint64_t longestPath()  = 0;
   virtual int nClauses() const = 0;
   virtual void dump(std::ostream &out) const = 0;
   virtual void writeCNF(std::ostream &out) const {};
@@ -76,7 +77,8 @@ protected:
 public:
   int nClauses() const override {return 2;}  
   void dump(std::ostream &out) const override;
-  void writeCNF(std::ostream &out) const override;  
+  void writeCNF(std::ostream &out) const override;
+  uint64_t longestPath() override;  
 };
 
 class and2 : public gate {
@@ -88,7 +90,8 @@ protected:
 public:
   int nClauses() const override {return 3;};    
   void dump(std::ostream &out) const override;
-  void writeCNF(std::ostream &out) const override;  
+  void writeCNF(std::ostream &out) const override;
+  uint64_t longestPath() override;    
 };
 
 class or2 : public gate {
@@ -100,7 +103,8 @@ protected:
 public:
   int nClauses() const override {return 3;}      
   void dump(std::ostream &out) const override;
-  void writeCNF(std::ostream &out) const override;  
+  void writeCNF(std::ostream &out) const override;
+  uint64_t longestPath() override;    
 };
 
 
@@ -113,7 +117,8 @@ protected:
 public:
   int nClauses() const override {return 4;}      
   void dump(std::ostream &out) const override;
-  void writeCNF(std::ostream &out) const override;    
+  void writeCNF(std::ostream &out) const override;
+  uint64_t longestPath() override;    
 };
 
 class constantone : public gate {
@@ -127,7 +132,10 @@ public:
   void dump(std::ostream &out) const override {
     out << getId() << " = 1\n";
   }
-  void writeCNF(std::ostream &out) const override;  
+  void writeCNF(std::ostream &out) const override;
+  uint64_t longestPath() override {
+    return 0;
+  };    
 };
 
 class constantzero : public gate {
@@ -141,7 +149,10 @@ public:
   void dump(std::ostream &out) const override {
     out << getId() << " = 0\n";
   }
-  void writeCNF(std::ostream &out) const override;  
+  void writeCNF(std::ostream &out) const override;
+  uint64_t longestPath() override {
+    return 0;
+  };      
 };
 
 
@@ -157,7 +168,8 @@ public:
   void dump(std::ostream &out) const override {
     out << getId() << " = out(" << srcs[0]->getId() << ")\n";
   }
-  void writeCNF(std::ostream &out) const override;  
+  void writeCNF(std::ostream &out) const override;
+  uint64_t longestPath() override;
 };
 
 
@@ -169,10 +181,12 @@ protected:
     gt = gateType::out;
   }
 public:
-  
   void dump(std::ostream &out) const override {
     out << getId() << " = in()\n";
   }
+  uint64_t longestPath() override {
+    return 0;
+  };        
 };
 
 

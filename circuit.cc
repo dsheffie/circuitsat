@@ -92,6 +92,45 @@ void po::writeCNF(std::ostream &out) const {
   out << srcs[0]->getId() << " 0\n";
 }
 
+uint64_t not1::longestPath() {
+  if(not(lpval)) {
+    lp = srcs[0]->longestPath()+ 1;
+    lpval = true;
+  }
+  return lp;
+}
+
+uint64_t or2::longestPath() {
+  if(not(lpval)) {
+    lp = std::max(srcs[0]->longestPath(), srcs[1]->longestPath()) + 1;
+    lpval = true;
+  }
+  return lp;
+}
+
+uint64_t and2::longestPath() {
+  if(not(lpval)) {
+    lp = std::max(srcs[0]->longestPath(), srcs[1]->longestPath()) + 1;
+    lpval = true;
+  }
+  return lp;
+}
+
+uint64_t xor2::longestPath() {
+  if(not(lpval)) {
+    lp = std::max(srcs[0]->longestPath(), srcs[1]->longestPath()) + 1;
+    lpval = true;
+  }
+  return lp;
+}
+
+uint64_t po::longestPath() {
+  if(not(lpval)) {
+    lp = srcs[0]->longestPath();
+    lpval = true;
+  }
+  return lp;
+}
 
 std::vector<gate*> make_ripple_carry_adder(logicmodule *lm, const std::vector<gate*> & a, const std::vector<gate*> & b) {
   std::vector<gate*> y;
@@ -207,6 +246,7 @@ int main(int argc, char *argv[]) {
 
   auto y = make_ripple_carry_adder(lm,a,b);
   auto x = make_parallel_prefix_adder(lm,a,b);
+
   auto t = make_not_equal(lm, y, x);
   auto o = lm->make_po(t, true);
 
